@@ -18,11 +18,57 @@ function createBoardElement() {
       input.addEventListener('input', (e) => {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
+        updateInvalidMoveState(e.target);
       });
       rowDiv.appendChild(input);
     }
     boardDiv.appendChild(rowDiv);
   }
+}
+
+function getCurrentBoard() {
+  const inputs = document.querySelectorAll('#sudoku-board input');
+  const board = Array.from({length: SIZE}, () => Array(SIZE).fill(0));
+  inputs.forEach((input) => {
+    board[Number(input.dataset.row)][Number(input.dataset.col)] = input.value
+      ? parseInt(input.value, 10)
+      : 0;
+  });
+  return board;
+}
+
+function isInvalidMove(row, col, value, board) {
+  for (let index = 0; index < SIZE; index++) {
+    if (index !== col && board[row][index] === value) return true;
+    if (index !== row && board[index][col] === value) return true;
+  }
+  const startRow = row - row % 3;
+  const startCol = col - col % 3;
+  for (let boxRow = startRow; boxRow < startRow + 3; boxRow++) {
+    for (let boxCol = startCol; boxCol < startCol + 3; boxCol++) {
+      if ((boxRow !== row || boxCol !== col) && board[boxRow][boxCol] === value) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function updateInvalidMoveState(input) {
+  const feedbackEnabled = document.getElementById('instant-feedback').checked;
+  input.classList.remove('invalid-move');
+  if (!feedbackEnabled || !input.value) return;
+
+  const row = Number(input.dataset.row);
+  const col = Number(input.dataset.col);
+  const board = getCurrentBoard();
+  if (isInvalidMove(row, col, board[row][col], board)) {
+    input.classList.add('invalid-move');
+  }
+}
+
+function updateAllInvalidMoveStates() {
+  document.querySelectorAll('#sudoku-board input:not(:disabled)').forEach(updateInvalidMoveState);
 }
 
 function renderPuzzle(puz) {
@@ -101,6 +147,15 @@ async function checkSolution() {
 window.addEventListener('load', () => {
   document.getElementById('new-game').addEventListener('click', newGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
+  document.getElementById('instant-feedback').addEventListener('change', (e) => {
+    if (!e.target.checked) {
+      document.querySelectorAll('#sudoku-board input').forEach((input) => {
+        input.classList.remove('invalid-move');
+      });
+      return;
+    }
+    updateAllInvalidMoveStates();
+  });
   // initialize
   newGame();
 });

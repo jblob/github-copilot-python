@@ -52,86 +52,49 @@ def remove_cells(board, clues):
 
 def count_solutions(board, limit=2):
     """Count solutions, stopping once the requested limit is reached."""
-    all_values = (1 << SIZE) - 1
-    row_masks = [0] * SIZE
-    col_masks = [0] * SIZE
-    box_masks = [0] * SIZE
-    empty_cells = []
+    total = 0
+    best_cell = None
+    best_candidates = None
 
     for row in range(SIZE):
         for col in range(SIZE):
-            value = board[row][col]
-            if value == EMPTY:
-                empty_cells.append((row, col))
+            if board[row][col] != EMPTY:
                 continue
-            bit = 1 << (value - 1)
-            box = (row // 3) * 3 + col // 3
-            if row_masks[row] & bit or col_masks[col] & bit or box_masks[box] & bit:
+            candidates = [
+                num for num in range(1, SIZE + 1)
+                if is_safe(board, row, col, num)
+            ]
+            if not candidates:
                 return 0
-            row_masks[row] |= bit
-            col_masks[col] |= bit
-            box_masks[box] |= bit
-
-    def search(remaining):
-        if not remaining:
-            return 1
-
-        best_index = 0
-        best_candidates = all_values
-        for index, (row, col) in enumerate(remaining):
-            box = (row // 3) * 3 + col // 3
-            candidates = all_values & ~(row_masks[row] | col_masks[col] | box_masks[box])
-            if candidates.bit_count() < best_candidates.bit_count():
-                best_index = index
+            if best_candidates is None or len(candidates) < len(best_candidates):
+                best_cell = (row, col)
                 best_candidates = candidates
-                if candidates.bit_count() <= 1:
+                if len(candidates) == 1:
                     break
-        if best_candidates == 0:
-            return 0
+        if best_candidates is not None and len(best_candidates) == 1:
+            break
 
-        row, col = remaining[best_index]
-        box = (row // 3) * 3 + col // 3
-        rest = remaining[:best_index] + remaining[best_index + 1:]
-        total = 0
-        while best_candidates:
-            bit = best_candidates & -best_candidates
-            best_candidates -= bit
-            row_masks[row] |= bit
-            col_masks[col] |= bit
-            box_masks[box] |= bit
-            total += search(rest)
-            row_masks[row] ^= bit
-            col_masks[col] ^= bit
-            box_masks[box] ^= bit
-            if total >= limit:
-                return total
-        return total
+    if best_cell is None:
+        return 1
 
-    return search(empty_cells)
+    row, col = best_cell
+    for candidate in best_candidates:
+        board[row][col] = candidate
+        total += count_solutions(board, limit - total)
+        board[row][col] = EMPTY
+        if total >= limit:
+            return total
+    return total
 
 def generate_puzzle(clues=35):
     while True:
         board = create_empty_board()
         fill_board(board)
         solution = deep_copy(board)
-        cells = [(row, col) for row in range(SIZE) for col in range(SIZE)]
-        random.shuffle(cells)
-
-        for row, col in cells:
-            if sum(cell != EMPTY for current_row in board for cell in current_row) <= clues:
-                break
-            value = board[row][col]
-            board[row][col] = EMPTY
-            if count_solutions(board) > 1:
-                logger.warning(
-                    'Generated puzzle has multiple solutions; trying a new puzzle candidate.'
-                )
-                board[row][col] = value
-
-        if sum(cell != EMPTY for current_row in board for cell in current_row) > clues:
+        remove_cells(board, clues)
+        if count_solutions(board) > 1:
             logger.warning(
-                'Generated puzzle could not reach the requested clue count; '
-                'generating a new puzzle.'
+                'Generated puzzle has multiple solutions; generating a new puzzle.'
             )
             continue
         return deep_copy(board), solution

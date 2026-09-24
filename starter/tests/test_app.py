@@ -26,6 +26,13 @@ def test_index_includes_difficulty_selector(client):
     assert b'<option value="hard">Hard</option>' in response.data
 
 
+def test_index_includes_instant_feedback_toggle(client):
+    response = client.get('/')
+
+    assert b'id="instant-feedback"' in response.data
+    assert b'type="checkbox" checked' in response.data
+
+
 def test_new_game_returns_requested_number_of_clues(client):
     response = client.get('/new?clues=45')
 
