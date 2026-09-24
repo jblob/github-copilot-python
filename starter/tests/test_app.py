@@ -26,6 +26,26 @@ def test_new_game_returns_requested_number_of_clues(client):
     assert app.CURRENT['solution'] is not None
 
 
+@pytest.mark.parametrize('difficulty, expected_clues', [
+    ('easy', 45),
+    ('medium', 35),
+    ('hard', 25),
+])
+def test_new_game_uses_difficulty_clue_count(client, difficulty, expected_clues):
+    response = client.get(f'/new?difficulty={difficulty}')
+
+    assert response.status_code == 200
+    puzzle = response.get_json()['puzzle']
+    assert sum(cell != 0 for row in puzzle for cell in row) == expected_clues
+
+
+def test_new_game_rejects_unknown_difficulty(client):
+    response = client.get('/new?difficulty=expert')
+
+    assert response.status_code == 400
+    assert response.get_json() == {'error': 'Invalid difficulty'}
+
+
 def test_check_requires_game_in_progress(client):
     app.CURRENT['solution'] = None
 
