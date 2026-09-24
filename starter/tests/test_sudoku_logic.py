@@ -15,8 +15,15 @@ def test_generate_puzzle_preserves_solution_and_clue_count():
     clues = 40
     puzzle, solution = sudoku_logic.generate_puzzle(clues)
 
-    assert sum(cell != sudoku_logic.EMPTY for row in puzzle for cell in row) == clues
-    assert all(sorted(row) == list(range(1, sudoku_logic.SIZE + 1)) for row in solution)
+    assert sum(
+        cell != sudoku_logic.EMPTY
+        for row in puzzle
+        for cell in row
+    ) == clues
+    assert all(
+        sorted(row) == list(range(1, sudoku_logic.SIZE + 1))
+        for row in solution
+    )
     assert all(
         solution[row][col] == puzzle[row][col]
         for row in range(sudoku_logic.SIZE)
@@ -47,14 +54,21 @@ def test_generate_puzzle_logs_and_retries_multiple_solution_candidate(
         calls += 1
         return 2 if calls == 1 else 1
 
-    monkeypatch.setattr(sudoku_logic, 'count_solutions', count_solutions_with_initial_failure)
+    monkeypatch.setattr(
+        sudoku_logic,
+        'count_solutions',
+        count_solutions_with_initial_failure,
+    )
 
     with caplog.at_level(logging.WARNING):
         puzzle, solution = sudoku_logic.generate_puzzle(clues=80)
 
     assert calls > 1
     assert puzzle != solution
-    assert any('multiple solutions' in record.message for record in caplog.records)
+    assert any(
+        'multiple solutions' in record.message
+        for record in caplog.records
+    )
 
 
 def test_is_safe_rejects_existing_row_column_and_box_values():

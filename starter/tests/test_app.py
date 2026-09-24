@@ -43,12 +43,19 @@ def test_new_game_returns_requested_number_of_clues(client):
     assert app.CURRENT['solution'] is not None
 
 
-@pytest.mark.parametrize('difficulty, expected_clues', [
-    ('easy', 45),
-    ('medium', 35),
-    ('hard', 25),
-])
-def test_new_game_uses_difficulty_clue_count(client, difficulty, expected_clues):
+@pytest.mark.parametrize(
+    'difficulty, expected_clues',
+    [
+        ('easy', 45),
+        ('medium', 35),
+        ('hard', 25),
+    ],
+)
+def test_new_game_uses_difficulty_clue_count(
+    client,
+    difficulty,
+    expected_clues,
+):
     response = client.get(f'/new?difficulty={difficulty}')
 
     assert response.status_code == 200

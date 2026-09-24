@@ -6,11 +6,14 @@ SIZE = 9
 EMPTY = 0
 logger = logging.getLogger(__name__)
 
+
 def deep_copy(board):
     return copy.deepcopy(board)
 
+
 def create_empty_board():
     return [[EMPTY for _ in range(SIZE)] for _ in range(SIZE)]
+
 
 def is_safe(board, row, col, num):
     # Check row and column
@@ -25,6 +28,7 @@ def is_safe(board, row, col, num):
             if board[start_row + i][start_col + j] == num:
                 return False
     return True
+
 
 def fill_board(board):
     for row in range(SIZE):
@@ -41,6 +45,7 @@ def fill_board(board):
                 return False
     return True
 
+
 def remove_cells(board, clues):
     attempts = SIZE * SIZE - clues
     while attempts > 0:
@@ -49,6 +54,7 @@ def remove_cells(board, clues):
         if board[row][col] != EMPTY:
             board[row][col] = EMPTY
             attempts -= 1
+
 
 def count_solutions(board, limit=2):
     """Count solutions, stopping once the requested limit is reached."""
@@ -66,7 +72,11 @@ def count_solutions(board, limit=2):
                 continue
             bit = 1 << (value - 1)
             box = (row // 3) * 3 + col // 3
-            if row_masks[row] & bit or col_masks[col] & bit or box_masks[box] & bit:
+            if (
+                row_masks[row] & bit
+                or col_masks[col] & bit
+                or box_masks[box] & bit
+            ):
                 return 0
             row_masks[row] |= bit
             col_masks[col] |= bit
@@ -80,7 +90,9 @@ def count_solutions(board, limit=2):
         best_candidates = all_values
         for index, (row, col) in enumerate(remaining):
             box = (row // 3) * 3 + col // 3
-            candidates = all_values & ~(row_masks[row] | col_masks[col] | box_masks[box])
+            candidates = all_values & ~(
+                row_masks[row] | col_masks[col] | box_masks[box]
+            )
             if candidates.bit_count() < best_candidates.bit_count():
                 best_index = index
                 best_candidates = candidates
@@ -109,6 +121,7 @@ def count_solutions(board, limit=2):
 
     return search(empty_cells)
 
+
 def generate_puzzle(clues=35):
     while True:
         board = create_empty_board()
@@ -118,19 +131,30 @@ def generate_puzzle(clues=35):
         random.shuffle(cells)
 
         for row, col in cells:
-            filled = sum(cell != EMPTY for current_row in board for cell in current_row)
+            filled = sum(
+                cell != EMPTY
+                for current_row in board
+                for cell in current_row
+            )
             if filled <= clues:
                 return deep_copy(board), solution
             value = board[row][col]
             board[row][col] = EMPTY
             if count_solutions(board) > 1:
                 logger.warning(
-                    'Generated puzzle has multiple solutions; trying a new puzzle candidate.'
+                    'Generated puzzle has multiple solutions; '
+                    'trying a new puzzle candidate.'
                 )
                 board[row][col] = value
 
-        if sum(cell != EMPTY for current_row in board for cell in current_row) <= clues:
+        filled = sum(
+            cell != EMPTY
+            for current_row in board
+            for cell in current_row
+        )
+        if filled <= clues:
             return deep_copy(board), solution
         logger.warning(
-            'Generated puzzle could not reach the requested clue count; generating a new puzzle.'
+            'Generated puzzle could not reach the requested clue count; '
+            'generating a new puzzle.'
         )
