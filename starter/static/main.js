@@ -136,7 +136,7 @@ async function checkSolution() {
   }
   if (incorrect.size === 0) {
     msg.style.color = '#388e3c';
-    msg.innerText = 'Congratulations! You solved it!';
+    msg.innerText = 'Puzzle solved correctly! Congratulations!';
   } else {
     msg.style.color = '#d32f2f';
     msg.innerText = 'Some cells are incorrect.';

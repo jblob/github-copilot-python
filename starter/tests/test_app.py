@@ -31,6 +31,7 @@ def test_index_includes_instant_feedback_toggle(client):
 
     assert b'id="instant-feedback"' in response.data
     assert b'type="checkbox" checked' in response.data
+    assert b'role="status"' in response.data
 
 
 def test_new_game_returns_requested_number_of_clues(client):
