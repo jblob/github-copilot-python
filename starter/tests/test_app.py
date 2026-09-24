@@ -34,6 +34,14 @@ def test_index_includes_instant_feedback_toggle(client):
     assert b'role="status"' in response.data
 
 
+def test_index_includes_grid_box_shading_styles(client):
+    response = client.get('/static/styles.css')
+
+    assert b'--box-shade-bg' in response.data
+    assert b'.sudoku-cell.box-shade' in response.data
+    assert b'.sudoku-cell.box-plain' in response.data
+
+
 def test_new_game_returns_requested_number_of_clues(client):
     response = client.get('/new?clues=45')
 

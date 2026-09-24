@@ -12,7 +12,12 @@ function createBoardElement() {
       const input = document.createElement('input');
       input.type = 'text';
       input.maxLength = 1;
-      input.className = 'sudoku-cell';
+      const boxRow = Math.floor(i / 3);
+      const boxCol = Math.floor(j / 3);
+      const boxClass = (boxRow + boxCol) % 2 === 0
+        ? 'box-shade'
+        : 'box-plain';
+      input.className = `sudoku-cell ${boxClass}`;
       input.dataset.row = i;
       input.dataset.col = j;
       input.addEventListener('input', (e) => {
@@ -129,9 +134,9 @@ async function checkSolution() {
   for (let idx = 0; idx < inputs.length; idx++) {
     const inp = inputs[idx];
     if (inp.disabled) continue;
-    inp.className = 'sudoku-cell';
+    inp.classList.remove('incorrect', 'invalid-move');
     if (incorrect.has(idx)) {
-      inp.className = 'sudoku-cell incorrect';
+      inp.classList.add('incorrect');
     }
   }
   if (incorrect.size === 0) {

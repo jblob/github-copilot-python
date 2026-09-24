@@ -1,3 +1,10 @@
+:root {
+    --box-shade-bg: #e9f3f1;
+    --box-plain-bg: #ffffff;
+    --prefilled-shade-bg: #d5e4e1;
+    --prefilled-plain-bg: #e0e0e0;
+}
+
 body {
     font-family: Arial, sans-serif;
     background: #f4f4f4;
@@ -30,8 +37,16 @@ h1 {
     text-align: center;
     font-size: 20px;
     outline: none;
-    background: #fafafa;
+    background: var(--box-plain-bg);
     transition: background 0.2s;
+}
+
+.sudoku-cell.box-shade {
+    background: var(--box-shade-bg);
+}
+
+.sudoku-cell.box-plain {
+    background: var(--box-plain-bg);
 }
 
 .sudoku-cell:focus {
@@ -39,9 +54,16 @@ h1 {
 }
 
 .sudoku-cell.prefilled {
-    background: #e0e0e0;
     font-weight: bold;
     color: #333;
+}
+
+.sudoku-cell.prefilled.box-shade {
+    background: var(--prefilled-shade-bg);
+}
+
+.sudoku-cell.prefilled.box-plain {
+    background: var(--prefilled-plain-bg);
 }
 
 .sudoku-cell.incorrect {
