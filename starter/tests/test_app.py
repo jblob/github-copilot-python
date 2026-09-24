@@ -17,6 +17,15 @@ def test_index_returns_game_page(client):
     assert b'Sudoku' in response.data
 
 
+def test_index_includes_difficulty_selector(client):
+    response = client.get('/')
+
+    assert b'<select id="difficulty">' in response.data
+    assert b'<option value="easy">Easy</option>' in response.data
+    assert b'<option value="medium" selected>Medium</option>' in response.data
+    assert b'<option value="hard">Hard</option>' in response.data
+
+
 def test_new_game_returns_requested_number_of_clues(client):
     response = client.get('/new?clues=45')
 
